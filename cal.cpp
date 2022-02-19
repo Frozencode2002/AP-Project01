@@ -7,4 +7,5 @@ int main(){
 	cin >> n;
 	a.read(n);
 	cout << a.io_check() << endl;
+	printf("%.1f", a.out());
 }
