@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define TOKENS_SIZE 100
+#define eps 1e-9
 class TOKENS{
 public:
 	TOKENS(){
@@ -16,40 +17,55 @@ public:
 	bool deal(string read_data, double &res){
 	    int op[TOKENS_SIZE];
 	    char tmp[TOKENS_SIZE];
-	    int cnt = 0, tem = 0, num[TOKENS_SIZE];
+	    int cnt = 0;
+	    double tem = 0, num[TOKENS_SIZE];
 	    int last_0_flag = 0, len = read_data.size();
+	    int dot_flag = 0, cnt_dot = 0;
 	    for(int i = 0; i < len; i++) tmp[i] = read_data[i];
 	    for(int i = 0; i < TOKENS_SIZE; i++) op[i] = 0;
 	    for (int i = 0; i < len; i++)
 	    {
-	            if (!('0' <= tmp[i] && tmp[i] <= '9'))
-	            {
-	                if (tem != 0 || last_0_flag == 1)
-	                {
-	                    num[cnt++] = tem;
-	                    tem = 0;
-	                    last_0_flag = 0;
-	                }
-	                else if(i == 0 || (tmp[i - 1] != ')' && !('0' <= tmp[i - 1] && tmp[i - 1] <= '9'))){
-	                    len += 2;
-	                    for(int j = len - 1; j >= i + 2; j--){
-	                            tmp[j] = tmp[j - 2];
-	                    }
-	                    tmp[i + 1] = '1';
-	                    tmp[i + 2] = '*';
-	                    op[i] = 1;
-	                }
-	            }
-	            else
-	            {
-	                tem = tem * 10 + tmp[i] - '0';
-	                if(tem == 0) last_0_flag = 1;
-	                else last_0_flag = 0;
-	            }
+            if (!('0' <= tmp[i] && tmp[i] <= '9'))
+            {
+            	if(tmp[i] == '.'){
+            		if(dot_flag) return false;
+            		dot_flag = 1;
+            	}
+                else if (tem != 0 || last_0_flag == 1)
+                {
+                	for(int i = 1; i <= cnt_dot; i++) tem /= 10.0;
+                    num[cnt++] = tem;
+                    tem = 0;
+                    last_0_flag = 0;
+                    dot_flag = 0;
+                    cnt_dot = 0;
+                }
+                else if(i == 0 || (tmp[i - 1] != ')' && !('0' <= tmp[i - 1] && tmp[i - 1] <= '9'))){
+                    len += 2;
+                    for(int j = len - 1; j >= i + 2; j--){
+                            tmp[j] = tmp[j - 2];
+                    }
+                    tmp[i + 1] = '1';
+                    tmp[i + 2] = '*';
+                    op[i] = 1;
+                }
+            }
+            else
+            {
+                tem = tem * 10.0 + (tmp[i] - '0') * 1.0;
+                if(tem == 0) last_0_flag = 1;
+                else last_0_flag = 0;
+                if(dot_flag) cnt_dot++;
+            }
 	    }
-	    if (tem != 0 || last_0_flag) num[cnt++] = tem; // 需要处理最后一个操作数是0 的情况！！
-
-	    int cnt_stack = 0, cnt_token = 0, tem_num = 0, stack[TOKENS_SIZE], token[TOKENS_SIZE]; // stack为操作符栈  token为后缀表达式
+	    if (tem != 0 || last_0_flag){
+	    	for(int i = 1; i <= cnt_dot; i++) tem /= 10.0;
+	    	num[cnt++] = tem;
+	     	// 需要处理最后一个操作数是0 的情况！！
+	    }
+	    // for(int i = 0; i < cnt; i++) printf("%.3f\n", num[i]);
+	    int cnt_stack = 0, cnt_token = 0, tem_num = 0, stack[TOKENS_SIZE];
+	    double token[TOKENS_SIZE]; // stack为操作符栈  token为后缀表达式
 	    stack[0] = '#';                                                        // '#'
 	    int priority_map[TOKENS_SIZE];
 	    // cnt_stack 指向当前最后一个有效操作符
@@ -63,19 +79,19 @@ public:
 	    priority_map[41] = 4; // )
 
 	    int flag = 0;
-	    int minus_flag = 1;
+	    double minus_flag = 1.0;
 	    int suf_op_pos[TOKENS_SIZE];
 	    for(int i = 0; i < TOKENS_SIZE; i++) suf_op_pos[i] = 0;
 	    for (int i = 0; i < len; i++)
 	    {
-	            if (('0' <= tmp[i] && tmp[i] <= '9'))
+	            if (('0' <= tmp[i] && tmp[i] <= '9') || tmp[i] == '.')
 	            { // num
 	                if (!flag)
 	                {
 	                    flag = 1;
 	                    token[cnt_token] = num[tem_num++] * minus_flag;
 	                    suf_op_pos[cnt_token] = 1;
-	                    minus_flag = 1;
+	                    minus_flag = 1.0;
 	                    cnt_token++;
 	                }
 	            }
@@ -114,7 +130,7 @@ public:
 	                    cnt_stack--;
 	                }
 	                else if(tmp[i] == '-'){
-	                    minus_flag = -1;
+	                    minus_flag = -1.0;
 	                }
 	                else
 	                {
@@ -153,6 +169,7 @@ public:
 	            }
 	            else if (token[i] == -47)
 	            {
+	            	if(abs(cal_stack[cal_num - 1]) < eps) return false;
 	                cal_stack[cal_num - 2] = cal_stack[cal_num - 2] / cal_stack[cal_num - 1];
 	                cal_num--;
 	            }
