@@ -1,5 +1,4 @@
 #include "cal.h"
-#include <bits/stdc++.h>
 using namespace std;
 int main(){
 	TOKENS a;

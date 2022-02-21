@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include "gettime.h"
 using namespace std;
 string getTime()
 {
