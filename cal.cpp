@@ -4,7 +4,7 @@ using namespace std;
 int main(){
 	TOKENS a;
 	string n;
-	cin >> n;
+	getline(cin, n);
 	a.read(n);
 	cout << a.io_check() << endl;
 	printf("%.1f", a.out());
