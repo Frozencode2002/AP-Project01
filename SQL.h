@@ -3,10 +3,10 @@
 using namespace std;
 class SQL{
 public:
-	string SELECT_G(string name, string colomn = "-", string value = "-"){
+	string SELECT_G(string name, string colomn = "", string value = ""){
 		string res = "";
 		res += "SELECT * FROM " + name;
-		if(colomn != "-"){
+		if(colomn != ""){
 			res += " WHERE " + colomn + " CONTAINS " + value;
 		}
 		return res;

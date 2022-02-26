@@ -1,4 +1,3 @@
-#include "gettime.h"
 #include "SQL.h"
 #include <regex>
 #include <unistd.h>
@@ -92,14 +91,25 @@ public:
 		}
 		file.close();
 	}
-	void view_good(){
+	void write_cmd(string name, int op, string sel_col = "", string sel_val = "", vector <string> col = {}, vector <string> val = {}){
 		string ord = getTime();
-		ord += ": " + G.SELECT_G("commodity");
-		ofstream cmd("command.txt", ios::app);
+		ord += ": ";
+		if(op == 1){
+			ord += G.SELECT_G(name, sel_col, sel_val);
+		}
+		else if(op == 2){
+			ord += G.INSERT_G(name, val);
+		}	
+		else{
+			ord += G.UPDATE_G(name, col, val, sel_col, sel_val);
+		}
+		ofstream cmd("commands.txt", ios::app);
 		cmd << "\n";
 		cmd << ord;
 		cmd.close();
-
+	}
+	void view_good(){
+		write_cmd("commodity", 1);
 		ifstream good_list("commodity.txt", ios::in);
 		vector <vector<string>> COMMODITY;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -123,6 +133,7 @@ public:
 		cut_line();
 	}
 	void search_good(string good_name){
+		write_cmd("commodity", 1, "商品ID", good_name);
 		ifstream good_list("commodity.txt", ios::in);
 		vector <vector<string>> COMMODITY;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -179,6 +190,7 @@ public:
 		string option;
 		cin >> option;
 		if(option == "y"){
+			write_cmd("commodity", 3, "商品ID", good_id, {"商品状态"}, {"已下架"});
 			cout << "下架成功\n";
 			file_print(COMMODITY, "commodity.txt");
 		}
@@ -187,6 +199,7 @@ public:
 		}
 	}
 	void view_order(){
+		write_cmd("order", 1);
 		ifstream order_list("order.txt", ios::in);
 		vector <vector<string>> order;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -210,6 +223,7 @@ public:
 		cut_line();
 	}
 	void view_user(){
+		write_cmd("user", 1);
 		ifstream user_list("user.txt", ios::in);
 		vector <vector<string>> user;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -233,6 +247,7 @@ public:
 		cut_line();
 	}
 	void ban_good_by_user(string name){
+		write_cmd("commodity", 3, "卖家ID", name, {"商品状态"}, {"已下架"});
 		ifstream good_list("commodity.txt", ios::in);
 		vector <vector<string>> COMMODITY;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -288,7 +303,9 @@ public:
 		string option;
 		cin >> option;
 		if(option == "y"){
+			write_cmd("user", 3, "用户ID", name, {"用户状态"}, {"封禁"});
 			cout << "封禁成功\n";
+			ban_good_by_user(name);
 			file_print(user, "user.txt");
 		}
 		else{
