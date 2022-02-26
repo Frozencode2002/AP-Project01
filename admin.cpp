@@ -2,5 +2,6 @@
 using namespace std;
 int main(){
 	admin A;
-	A.view_good();
+	A.run();
+	// A.search_good("纪念币");
 }
