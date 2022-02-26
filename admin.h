@@ -1,9 +1,17 @@
 #include "gettime.h"
+#include "SQL.h"
 #include <regex>
 #include <unistd.h>
 using namespace std;
 class admin{
 public:
+	string getTime(){
+	    time_t timep;
+	    time (&timep); //获取time_t类型的当前时间
+	    char tmp[64];
+	    strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S",localtime(&timep) );//对日期和时间进行格式化
+	    return tmp;
+	}
 	admin(){
 		username = "admin";
 		password = "123456";
@@ -85,6 +93,13 @@ public:
 		file.close();
 	}
 	void view_good(){
+		string ord = getTime();
+		ord += ": " + G.SELECT_G("commodity");
+		ofstream cmd("command.txt", ios::app);
+		cmd << "\n";
+		cmd << ord;
+		cmd.close();
+
 		ifstream good_list("commodity.txt", ios::in);
 		vector <vector<string>> COMMODITY;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -282,4 +297,5 @@ public:
 	}
 private:
 	string username, password;
+	SQL G;
 };
