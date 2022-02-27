@@ -1,4 +1,7 @@
-#include "SQL.h"
+#ifndef _SQL_H_
+	#define _SQL_H_
+	#include "SQL.h"
+#endif
 #include <regex>
 #include <unistd.h>
 using namespace std;
