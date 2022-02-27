@@ -8,6 +8,14 @@ public:
 	void cut_line(){
 		cout << "****************************************************************\n";
 	}
+	void eline(){
+		cout << "==============================================================\n";
+	}
+	void main_menu(){
+		eline();
+		cout << "1.我是买家 2.我是卖家 3.个人信息管理 4.注销登录\n";
+		eline();
+	}
 	void ui_print(vector<vector<string>> &out){
 		for(int i = 0; i < out.size(); i++){
 			vector <string> line = out[i];
@@ -116,7 +124,7 @@ public:
 		file_print(all_info, "user.txt");
 		cout << "注册成功！" << "\n";
 	}
-	string log_in(string name, string password){
+	string log_in(string name, string password){ // return user id
 		string res = "";
 		ifstream user_file("user.txt", ios::in);
 		vector <vector<string>> all_info;
