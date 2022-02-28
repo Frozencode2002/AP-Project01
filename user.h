@@ -83,6 +83,23 @@ public:
 		}
 		return res;
 	}
+	void write_cmd(string name, int op, string sel_col = "", string sel_val = "", vector <string> col = {}, vector <string> val = {}){
+		string ord = getTime();
+		ord += ": ";
+		if(op == 1){
+			ord += G.SELECT_G(name, sel_col, sel_val);
+		}
+		else if(op == 2){
+			ord += G.INSERT_G(name, val);
+		}	
+		else{
+			ord += G.UPDATE_G(name, col, val, sel_col, sel_val);
+		}
+		ofstream cmd("commands.txt", ios::app);
+		cmd << "\n";
+		cmd << ord;
+		cmd.close();
+	}
 	void run(string user_id){
 		main_menu();
 		string op;
@@ -153,10 +170,10 @@ public:
 				sell_modify(user_id);
 			}
 			else if(op == "4"){
-
+				sell_ban(user_id);
 			}
 			else if(op == "5"){
-
+				sell_view_ord(user_id);
 			}
 			else{
 				cout << "您输入的操作不合法！\n";
@@ -223,6 +240,7 @@ public:
 		cout << "您确认要发布商品吗?(y/n)";
 		cin >> user_in;
 		if(user_in == "y" && flag){
+			write_cmd("commodity", 2, "", "", {}, good_info);
 			cout << "发布成功!\n";
 			string g_id = get_hash();
 			string g_time = getTime();
@@ -240,6 +258,7 @@ public:
 		}
 	}
 	void sell_view(string user_id){
+		write_cmd("commodity", 1);
 		ifstream good_list("commodity.txt", ios::in);
 		vector <vector<string>> COMMODITY;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -339,14 +358,110 @@ public:
 		}
 		cut_line();
 		cout << "确认修改?(y/n)";
-		cin >> op;
-		if(op == "y"){
+		string uop;
+		cin >> uop;
+		if(uop == "y"){
 			cout << "修改成功!\n";
 			file_print(COMMODITY, "commodity.txt");
+			if(op == "1"){
+				write_cmd("commodity", 3, "商品ID", g_id, {"价格"}, {g_val});
+			}
+			else{
+				write_cmd("commodity", 3, "商品ID", g_id, {"描述"}, {g_info});
+			}
 		}
 		else{
 			cout << "修改失败!\n";
 		}
+	}
+	void sell_ban(string user_id){
+		bool flag = true, inc = false;
+		string g_id;
+		cout << "请输入要下架的商品ID:";
+		cin >> g_id;
+
+		ifstream good_list("commodity.txt", ios::in);
+		vector <vector<string>> COMMODITY;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!good_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(good_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			COMMODITY.push_back(one_line);
+			if(one_line[0] == g_id){
+				inc = true;
+				if(one_line[5] != user_id) flag = false;
+			}
+		}
+		good_list.close();
+		if(!inc){
+			cout << "该商品不存在!\n";
+			return;
+		}
+		if(!flag){
+			cout << "您不是该商品的卖家，无权限修改!\n";
+			return;
+		}
+		cout << "请确认是否下架该商品!\n";
+		cut_line();
+		for(auto s : COMMODITY){
+			if(s[0] == g_id || s[0] == "商品ID"){
+				for(int i = 0; i < s.size(); i++){
+					cout << s[i];
+					if(i + 1 != s.size()) cout << ",";
+				}
+				cout << "\n";
+			}
+		}
+		cut_line();
+		for(int i = 0; i < COMMODITY.size(); i++){
+			if(COMMODITY[i][0] == g_id){
+				COMMODITY[i][7] = "已下架";
+			}
+		}
+		cout << "确认下架?(y/n)";
+		string op;
+		cin >> op;
+		if(op == "y"){
+			cout << "下架成功!\n";
+			write_cmd("commodity", 3, "商品ID", g_id, {"商品状态"}, {"已下架"});
+			file_print(COMMODITY, "commodity.txt");
+		}
+		else{
+			cout << "下架失败!\n";
+		}
+	}
+	void sell_view_ord(string user_id){
+		write_cmd("order", 1);
+		ifstream ord_list("order.txt", ios::in);
+		vector <vector<string>> ORDER;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!ord_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(ord_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[5] == user_id || one_line[5] == "卖家ID") ORDER.push_back(one_line);
+		}
+		ord_list.close();
+		cut_line();
+		ui_print(ORDER);
+		cut_line();
 	}
 	void user_reg(){
 		vector <string> info;
@@ -436,4 +551,6 @@ public:
 		user_file.close();
 		return res;
 	}
+private:
+	SQL G;
 };
