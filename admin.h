@@ -136,7 +136,7 @@ public:
 		cut_line();
 	}
 	void search_good(string good_name){
-		write_cmd("commodity", 1, "商品ID", good_name);
+		write_cmd("commodity", 1, "名称", good_name);
 		ifstream good_list("commodity.txt", ios::in);
 		vector <vector<string>> COMMODITY;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!

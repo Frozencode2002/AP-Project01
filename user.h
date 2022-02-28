@@ -131,19 +131,19 @@ public:
 		cin >> op;
 		while(op != "6"){
 			if(op == "1"){
-
+				buy_view(user_id);
 			}
 			else if(op == "2"){
 
 			}
 			else if(op == "3"){
-
+				buy_search(user_id);
 			}
 			else if(op == "4"){
-
+				buy_order(user_id);
 			}
 			else if(op == "5"){
-
+				buy_info(user_id);
 			}
 			else{
 				cout << "您输入的操作不合法！\n";
@@ -207,6 +207,113 @@ public:
 			cin >> op;
 		}
 		return;
+	}
+	void buy_view(string user_id){
+		write_cmd("commodity", 1);
+		ifstream good_list("commodity.txt", ios::in);
+		vector <vector<string>> COMMODITY;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!good_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(good_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if((one_line[5] != user_id) && ((one_line[7] == "商品状态") || (one_line[7] == "销售中"))) COMMODITY.push_back(one_line);
+		}
+		good_list.close();
+		cut_line();
+		ui_print(COMMODITY);
+		cut_line();
+	}
+	void buy_search(string user_id){
+		cout << "请输入商品名称:";
+		string g_name;
+		cin >> g_name;
+		write_cmd("commodity", 1, "名称", g_name);
+		ifstream good_list("commodity.txt", ios::in);
+		vector <vector<string>> COMMODITY;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!good_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(good_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[0] == "商品ID" || ((one_line[1] == g_name) && (one_line[5] != user_id) && (one_line[7] == "销售中"))) COMMODITY.push_back(one_line);
+		}
+		good_list.close();
+		cut_line();
+		ui_print(COMMODITY);
+		cut_line();
+	}
+	void buy_order(string user_id){
+		write_cmd("order", 1);
+		ifstream order_list("order.txt", ios::in);
+		vector <vector<string>> order;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!order_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(order_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[6] == user_id || one_line[6] == "买家ID") order.push_back(one_line);
+		}
+		order_list.close();
+		cut_line();
+		ui_print(order);
+		cut_line();	
+	}
+	void buy_info(string user_id){
+		cout << "请输入你想要查看的商品ID:";
+		string g_id;
+		cin >> g_id;
+		ifstream good_list("commodity.txt", ios::in);
+		vector <vector<string>> COMMODITY;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		cut_line();
+		while(!good_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(good_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[0] == "商品ID" || (one_line[0] == g_id && one_line[7] == "销售中")){
+				for(int i = 0; i < one_line.size(); i++){
+					cout << one_line[i];
+					if(i + 1 != one_line.size()) cout << ",";
+				}
+				cout << "\n";
+			}
+			COMMODITY.push_back(one_line);
+		}
+		good_list.close();
+		cut_line();
 	}
 	void sell_release(string user_id){
 		bool flag = true;
