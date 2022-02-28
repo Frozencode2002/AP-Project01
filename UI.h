@@ -35,7 +35,7 @@ public:
 					cout << "登录失败!\n";
 				}
 				else{
-					// u.run with id
+					u.run(ans);
 				}
 			}
 			else{

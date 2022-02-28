@@ -9,11 +9,26 @@ public:
 		cout << "****************************************************************\n";
 	}
 	void eline(){
-		cout << "==============================================================\n";
+		cout << "==============================================================================================\n";
 	}
 	void main_menu(){
 		eline();
 		cout << "1.我是买家 2.我是卖家 3.个人信息管理 4.注销登录\n";
+		eline();
+	}
+	void sell_menu(){
+		eline();
+		cout << "1.发布商品 2.查看发布商品 3.修改商品信息 4.下架商品 5.查看历史订单 6.返回用户主界面\n";
+		eline();
+	}
+	void buy_menu(){
+		eline();
+		cout << "1.查看商品列表 2.购买商品 3.搜索商品 4.查看历史订单 5.查看商品详细信息 6.返回用户主界面\n";
+		eline();
+	}
+	void modify_menu(){
+		eline();
+		cout << "1.查看信息 2.修改信息 3.充值 4.返回用户主界面\n";
 		eline();
 	}
 	void ui_print(vector<vector<string>> &out){
@@ -38,6 +53,13 @@ public:
 		}
 		file.close();
 	}
+	string getTime(){
+	    time_t timep;
+	    time (&timep); //获取time_t类型的当前时间
+	    char tmp[64];
+	    strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S",localtime(&timep) );//对日期和时间进行格式化
+	    return tmp;
+	}
 	string get_hash(){
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		mt19937 rand_num(seed);  // 大随机数
@@ -60,6 +82,271 @@ public:
 			}
 		}
 		return res;
+	}
+	void run(string user_id){
+		main_menu();
+		string op;
+		cout << "输入操作:";
+		cin >> op;
+		while(op != "4"){
+			if(op == "1"){
+				buy_run(user_id);
+			}
+			else if(op == "2"){
+				sell_run(user_id);
+			}
+			else if(op == "3"){
+				modify_run(user_id);
+			}
+			else{
+				cout << "您输入的操作不合法！\n";
+			}
+			main_menu();
+			cout << "输入操作:";
+			cin >> op;
+		}
+		return;
+	}
+	void buy_run(string user_id){
+		buy_menu();
+		string op;
+		cout << "请输入操作:";
+		cin >> op;
+		while(op != "6"){
+			if(op == "1"){
+
+			}
+			else if(op == "2"){
+
+			}
+			else if(op == "3"){
+
+			}
+			else if(op == "4"){
+
+			}
+			else if(op == "5"){
+
+			}
+			else{
+				cout << "您输入的操作不合法！\n";
+			}
+			buy_menu();
+			cout << "请输入操作:";
+			cin >> op;
+		}
+		return;
+	}
+	void sell_run(string user_id){
+		sell_menu();
+		string op;
+		cout << "请输入操作:";
+		cin >> op;
+		while(op != "6"){
+			if(op == "1"){
+				sell_release(user_id);
+			}
+			else if(op == "2"){
+				sell_view(user_id);
+			}
+			else if(op == "3"){
+				sell_modify(user_id);
+			}
+			else if(op == "4"){
+
+			}
+			else if(op == "5"){
+
+			}
+			else{
+				cout << "您输入的操作不合法！\n";
+			}
+			sell_menu();
+			cout << "请输入操作:";
+			cin >> op;
+		}
+		return;
+	}
+	void modify_run(string user_id){
+		modify_menu();
+		string op;
+		cout << "输入操作:";
+		cin >> op;
+		while(op != "4"){
+			if(op == "1"){
+
+			}
+			else if(op == "2"){
+
+			}
+			else if(op == "3"){
+
+			}
+			else{
+				cout << "您输入的操作不合法！\n";
+			}
+			modify_menu();
+			cout << "输入操作:";
+			cin >> op;
+		}
+		return;
+	}
+	void sell_release(string user_id){
+		bool flag = true;
+		vector <string> good_info;
+		string user_in;
+		cout << "请输入商品名称:";
+		cin >> user_in;
+		good_info.push_back(user_in);
+		cout << "请输入商品价格:";
+		cin >> user_in;
+		if(stod(user_in) < 0.0) flag = false;
+		good_info.push_back(user_in);
+		cout << "请输入商品数量:";
+		cin >> user_in;
+		if(stoi(user_in) <= 0) flag = false;
+		good_info.push_back(user_in);
+		cout << "请输入商品描述:";
+		cin >> user_in;
+		good_info.push_back(user_in);
+		cout << "请确认发布的商品信息无误!\n";
+		cut_line();
+		cout << "商品名称:";
+		cout << good_info[0] << endl;
+		cout << "商品价格:";
+		cout << good_info[1] << endl;
+		cout << "商品数量:";
+		cout << good_info[2] << endl;
+		cout << "商品描述:";
+		cout << good_info[3] << endl;  
+		cut_line();
+		cout << "您确认要发布商品吗?(y/n)";
+		cin >> user_in;
+		if(user_in == "y" && flag){
+			cout << "发布成功!\n";
+			string g_id = get_hash();
+			string g_time = getTime();
+			ofstream good_list("commodity.txt", ios::app);
+			good_list << "\n";
+			good_list << g_id <<",";
+			for(auto s : good_info) good_list << s << ",";
+			good_list << user_id << ",";
+			good_list << g_time.substr(0, 10) << ",";
+			good_list << "销售中";
+			good_list.close();
+		}
+		else{
+			cout << "发布失败!(人为取消或商品属性不合法)\n";
+		}
+	}
+	void sell_view(string user_id){
+		ifstream good_list("commodity.txt", ios::in);
+		vector <vector<string>> COMMODITY;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!good_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(good_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[5] == user_id || one_line[5] == "卖家ID") COMMODITY.push_back(one_line);
+		}
+		good_list.close();
+		cut_line();
+		ui_print(COMMODITY);
+		cut_line();
+	}
+	void sell_modify(string user_id){
+		bool flag = true, inc = false;
+		string g_id, op, g_info, g_val;
+		cout << "请输入被修改的商品ID:";
+		cin >> g_id;
+		cout << "请输入被修改的商品属性:(1.价格 2.描述)";
+		cin >> op;
+		if(op != "1" && op != "2"){
+			cout << "此操作不合法!\n";
+			return;
+		}
+		if(op == "1"){
+			cout << "请输入被修改的商品价格:";
+			cin >> g_val;
+			if(stod(g_val) < 0.0){
+				cout << "商品价格不合法!\n";
+				return;
+			}
+		}
+		else{
+			cout << "请输入被修改的商品描述:";
+			cin >> g_info;
+		}
+
+		ifstream good_list("commodity.txt", ios::in);
+		vector <vector<string>> COMMODITY;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!good_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(good_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			COMMODITY.push_back(one_line);
+			if(one_line[0] == g_id){
+				inc = true;
+				if(one_line[5] != user_id) flag = false;
+			}
+		}
+		good_list.close();
+		if(!inc){
+			cout << "该商品不存在!\n";
+			return;
+		}
+		if(!flag){
+			cout << "您不是该商品的卖家，无权限修改!\n";
+			return;
+		}
+		for(int i = 0; i < COMMODITY.size(); i++){
+			if(COMMODITY[i][0] == g_id){
+				if(op == "1"){
+					COMMODITY[i][2] = g_val;
+				}
+				else{
+					COMMODITY[i][4] = g_info;
+				}
+			}
+		}
+		cout << "请确认修改的商品信息无误!\n";
+		cut_line();
+		for(auto s : COMMODITY){
+			if(s[0] == g_id || s[0] == "商品ID"){
+				for(int i = 0; i < s.size(); i++){
+					cout << s[i];
+					if(i + 1 != s.size()) cout << ",";
+				}
+				cout << "\n";
+			}
+		}
+		cut_line();
+		cout << "确认修改?(y/n)";
+		cin >> op;
+		if(op == "y"){
+			cout << "修改成功!\n";
+			file_print(COMMODITY, "commodity.txt");
+		}
+		else{
+			cout << "修改失败!\n";
+		}
 	}
 	void user_reg(){
 		vector <string> info;
