@@ -191,10 +191,10 @@ public:
 		cin >> op;
 		while(op != "4"){
 			if(op == "1"){
-
+				modify_view(user_id);
 			}
 			else if(op == "2"){
-
+				modify_info(user_id);
 			}
 			else if(op == "3"){
 
@@ -207,6 +207,84 @@ public:
 			cin >> op;
 		}
 		return;
+	}
+	void modify_view(string user_id){
+		write_cmd("user", 1);
+		ifstream user_list("user.txt", ios::in);
+		vector <vector<string>> user;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!user_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(user_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[0] == user_id || one_line[0] == "用户ID") user.push_back(one_line);
+		}
+		user_list.close();
+		cut_line();
+		ui_print(user);
+		cut_line();
+	}
+	void modify_info(string user_id){
+		string op, name, contact, addr;
+		cout << "请选择修改的属性(1.用户名 2.联系方式 3.地址)";
+		cin >> op;
+		if(op == "1"){
+			cout << "请输入修改后的用户名:";
+			cin >> name;		
+		}
+		else if(op == "2"){
+			cout << "请输入修改后的联系方式:";
+			cin >> contact;
+		}
+		else if(op == "3"){
+			cout << "请输入修改后的地址:";
+			cin >> addr;
+		}
+		else{
+			cout << "请输入合法的指令！\n";
+			return;
+		}
+		bool flag = true;
+		ifstream user_list("user.txt", ios::in);
+		vector <vector<string>> user;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!user_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(user_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(op == "1" && one_line[1] == name) flag = false;
+			if(one_line[0] == user_id){
+				if(op == "1") one_line[1] = name;
+				if(op == "2") one_line[3] = contact;
+				if(op == "3") one_line[4] = addr;
+			}
+			user.push_back(one_line);
+		}
+		user_list.close();
+		if(!flag){
+			cout << "用户名与现有用户名重复！\n";
+			cout << "修改失败!\n";
+		}
+		else{
+			file_print(user, "user.txt");
+			cout << "修改成功!\n";
+		}
 	}
 	void buy_view(string user_id){
 		write_cmd("commodity", 1);
@@ -287,6 +365,7 @@ public:
 		cout << "请输入你想要查看的商品ID:";
 		string g_id;
 		cin >> g_id;
+		write_cmd("commodity", 1, "商品ID", g_id);
 		ifstream good_list("commodity.txt", ios::in);
 		vector <vector<string>> COMMODITY;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
