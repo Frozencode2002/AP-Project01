@@ -134,7 +134,7 @@ public:
 				buy_view(user_id);
 			}
 			else if(op == "2"){
-
+				buy_purchase(user_id);
 			}
 			else if(op == "3"){
 				buy_search(user_id);
@@ -197,7 +197,7 @@ public:
 				modify_info(user_id);
 			}
 			else if(op == "3"){
-
+				modify_charge(user_id);
 			}
 			else{
 				cout << "您输入的操作不合法！\n";
@@ -209,7 +209,7 @@ public:
 		return;
 	}
 	void modify_view(string user_id){
-		write_cmd("user", 1);
+		// write_cmd("user", 1);
 		ifstream user_list("user.txt", ios::in);
 		vector <vector<string>> user;
 		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
@@ -286,6 +286,41 @@ public:
 			cout << "修改成功!\n";
 		}
 	}
+	void modify_charge(string user_id){
+		cout << "请输入充值金额:";
+		string num;
+		cin >> num;
+		double src, dest = stod(num);
+		if(dest < 0){
+			cout << "请输入一个合法数字!\n";
+			return;
+		}
+		ifstream user_list("user.txt", ios::in);
+		vector <vector<string>> user;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!user_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(user_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[0] == user_id){
+				src = stod(one_line[5]);
+				src += dest;
+				one_line[5] = to_string(src);
+			}
+			user.push_back(one_line);
+		}
+		user_list.close();
+		file_print(user, "user.txt");
+		cout << "充值成功! 当前余额:" << to_string(src) << "\n";
+	}
 	void buy_view(string user_id){
 		write_cmd("commodity", 1);
 		ifstream good_list("commodity.txt", ios::in);
@@ -309,6 +344,89 @@ public:
 		cut_line();
 		ui_print(COMMODITY);
 		cut_line();
+	}
+	void buy_purchase(string user_id){
+		string g_id, g_cnt, res, g_val; // res 为余额
+		cout << "请输入商品id:";
+		cin >> g_id;
+		cout << "请输入商品数量:";
+		cin >> g_cnt;
+
+		ifstream user_list("user.txt", ios::in);
+		vector <vector<string>> user;
+		regex cat_line_info("([A-Z0-9a-z\\-\\.\u4e00-\u9fa5]+)(?=[,]*)"); //merge!
+		while(!user_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(user_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if(one_line[0] == user_id) res = one_line[5];
+			user.push_back(one_line);
+		}
+		user_list.close(); // read the val
+
+		int flag = 1;
+		ifstream good_list("commodity.txt", ios::in);
+		vector <vector<string>> COMMODITY;
+		while(!good_list.eof()){
+			string line_info, tokens;
+			smatch tem_word;
+			vector<string> one_line;
+			getline(good_list, line_info);	
+			string::const_iterator iterstart = line_info.begin();
+			string::const_iterator iterend = line_info.end();
+			while(regex_search(iterstart, iterend, tem_word, cat_line_info)){
+				tokens = tem_word[0];
+				one_line.push_back(tokens);
+				iterstart = tem_word[0].second;
+			}
+			if((one_line[5] != user_id) && ((one_line[7] == "商品状态") || (one_line[7] == "销售中")) && one_line[0] == g_id){
+				if(stoi(one_line[3]) < stoi(g_cnt)){
+					flag = 2; //库存不足
+				}
+				else{
+					if(stod(res) < stod(one_line[2]) * stod(g_cnt)){
+						flag = 3;
+					}
+					else{
+						flag = 0;
+						g_val = one_line[2];
+						one_line[3] = to_string(stoi(one_line[3]) - stoi(g_cnt)); // 清除库存
+						res = to_string(stod(res) - stod(one_line[2]) * stod(g_cnt)); // 计算余额
+					}
+					//检查余额是否足够支付
+				}
+			}
+			COMMODITY.push_back(one_line);
+		}
+		good_list.close();
+		if(flag){
+			if(flag == 1) cout << "该商品不存在或者交易非法!\n";
+			if(flag == 2) cout << "该商品库存不足!\n";
+			if(flag == 3) cout << "您的余额不足!\n";
+			return;
+		}
+		file_print(COMMODITY, "commodity.txt");
+		for(int i = 0; i < user.size(); i++){
+			if(user[i][0] == user_id){
+				user[i][5] = res;
+			}
+		}
+		file_print(user, "user.txt");
+		cut_line();
+		cout << "交易时间: " << getTime() << "\n";
+		cout << "交易单价: " << g_val << "\n";
+		cout << "交易数量: " << g_cnt << "\n";
+		cout << "交易状态: 交易成功!" << "\n";
+		cout << "您的余额: " << res << "\n";
+		cut_line(); 
 	}
 	void buy_search(string user_id){
 		cout << "请输入商品名称:";
